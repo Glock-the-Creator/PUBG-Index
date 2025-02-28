@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBG Stats Tracker</title>
+    <script>
+        async function fetchPUBGData() {
+            const gamertag = document.getElementById('gamertag').value;
+            const platform = document.getElementById('platform').value;
+            const apiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2OGUxZTc2MC1kNzhhLTAxM2QtMWNiNC0wNjFhOWQ1YjYxYWYiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNzQwNjk2MzA0LCJwdWIiOiJibHVlaG9sZSIsInRpdGxlIjoicHViZyIsImFwcCI6ImJvYi1haSJ9.g538psKEPmEEfdhBJe5jP2Jsym4xEVeWx3A-M4rXF0I";
+            
+            if (!gamertag || !platform) {
+                alert("Please enter a gamertag and select a platform.");
+                return;
+            }
+            
+            const url = `https://api.pubg.com/shards/${platform}/players?filter[playerNames]=${gamertag}`;
+            
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Accept': 'application/vnd.api+json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                document.getElementById('result').innerText = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error("Failed to fetch data", error);
+                document.getElementById('result').innerText = "Error fetching data. Check console for details.";
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>PUBG Stats Tracker</h1>
+    <label for="gamertag">Gamertag:</label>
+    <input type="text" id="gamertag" placeholder="Enter gamertag" required>
+    
+    <label for="platform">Platform:</label>
+    <select id="platform">
+        <option value="steam">Steam</option>
+        <option value="psn">PlayStation</option>
+        <option value="xbox">Xbox</option>
+    </select>
+    
+    <button onclick="fetchPUBGData()">Get Stats</button>
+    
+    <pre id="result"></pre>
+</body>
+</html>
