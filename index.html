@@ -1,57 +1,79 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PUBG Stats Tracker</title>
-    <script>
-        async function fetchPUBGData() {
-            const gamertag = document.getElementById('gamertag').value;
-            const platform = document.getElementById('platform').value;
-            const apiKey = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2OGUxZTc2MC1kNzhhLTAxM2QtMWNiNC0wNjFhOWQ1YjYxYWYiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNzQwNjk2MzA0LCJwdWIiOiJibHVlaG9sZSIsInRpdGxlIjoicHViZyIsImFwcCI6ImJvYi1haSJ9.g538psKEPmEEfdhBJe5jP2Jsym4xEVeWx3A-M4rXF0I";
-            
-            if (!gamertag || !platform) {
-                alert("Please enter a gamertag and select a platform.");
-                return;
-            }
-            
-            const url = `https://api.pubg.com/shards/${platform}/players?filter[playerNames]=${gamertag}`;
-            
-            try {
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Accept': 'application/vnd.api+json'
-                    }
-                });
-                
-                if (!response.ok) {
-                    throw new Error(`Error: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                document.getElementById('result').innerText = JSON.stringify(data, null, 2);
-            } catch (error) {
-                console.error("Failed to fetch data", error);
-                document.getElementById('result').innerText = "Error fetching data. Check console for details.";
-            }
+import React, { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { FaSteam, FaXbox, FaPlaystation } from "react-icons/fa";
+
+const API_KEY = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2OGUxZTc2MC1kNzhhLTAxM2QtMWNiNC0wNjFhOWQ1YjYxYWYiLCJpc3MiOiJnYW1lbG9ja2VyIiwiaWF0IjoxNzQwNjk2MzA0LCJwdWIiOiJibHVlaG9sZSIsInRpdGxlIjoicHViZyIsImFwcCI6ImJvYi1haSJ9.g538psKEPmEEfdhBJe5jP2Jsym4xEVeWx3A-M4rXF0I"; 
+// Replace with your actual API key
+const API_URL = "https://api.pubg.com/shards"; // Adjust if necessary
+
+export default function PUBGStats() {
+  const [username, setUsername] = useState("");
+  const [platform, setPlatform] = useState("steam");
+  const [stats, setStats] = useState(null);
+
+  const handlePlatformChange = (selectedPlatform) => {
+    setPlatform(selectedPlatform);
+  };
+
+  const handleSearch = async () => {
+    if (!username) return;
+    try {
+      const response = await fetch(`${API_URL}/${platform}/players?filter[playerNames]=${username}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${API_KEY}`,
+          Accept: "application/vnd.api+json"
         }
-    </script>
-</head>
-<body>
-    <h1>PUBG Stats Tracker</h1>
-    <label for="gamertag">Gamertag:</label>
-    <input type="text" id="gamertag" placeholder="Enter gamertag" required>
-    
-    <label for="platform">Platform:</label>
-    <select id="platform">
-        <option value="steam">Steam</option>
-        <option value="psn">PlayStation</option>
-        <option value="xbox">Xbox</option>
-    </select>
-    
-    <button onclick="fetchPUBGData()">Get Stats</button>
-    
-    <pre id="result"></pre>
-</body>
-</html>
+      });
+      if (!response.ok) throw new Error("Failed to fetch data");
+      const data = await response.json();
+      setStats(data);
+      console.log(data);
+    } catch (error) {
+      console.error("Error fetching player stats:", error);
+    }
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white">
+      <Card className="p-6 w-full max-w-lg bg-gray-900 shadow-xl rounded-2xl">
+        <CardContent className="flex flex-col items-center">
+          <h1 className="text-3xl font-bold mb-4">PUBG STATS</h1>
+          <p className="text-gray-400 mb-4">Check Detailed PUBG Stats and Leaderboards</p>
+          <div className="flex space-x-4 mb-4">
+            <Button
+              className={`p-3 rounded-full ${platform === "steam" ? "bg-blue-500" : "bg-gray-700"}`}
+              onClick={() => handlePlatformChange("steam")}
+            >
+              <FaSteam size={24} />
+            </Button>
+            <Button
+              className={`p-3 rounded-full ${platform === "xbox" ? "bg-green-500" : "bg-gray-700"}`}
+              onClick={() => handlePlatformChange("xbox")}
+            >
+              <FaXbox size={24} />
+            </Button>
+            <Button
+              className={`p-3 rounded-full ${platform === "psn" ? "bg-blue-700" : "bg-gray-700"}`}
+              onClick={() => handlePlatformChange("psn")}
+            >
+              <FaPlaystation size={24} />
+            </Button>
+          </div>
+          <Input
+            type="text"
+            placeholder="Enter PUBG Name"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full p-3 rounded-md bg-gray-800 border border-gray-600 text-white"
+          />
+          <Button className="mt-4 w-full bg-yellow-500 text-black p-3 rounded-lg" onClick={handleSearch}>
+            Search
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
